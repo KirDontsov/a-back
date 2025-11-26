@@ -50,19 +50,21 @@ async fn main() -> std::io::Result<()> {
 	};
 
 	// Connect to RabbitMQ
-	let conn =
-		match lapin::Connection::connect(&config.rabbitmq_url, lapin::ConnectionProperties::default())
-			.await
-		{
-			Ok(pool) => {
-				println!("✅ Connection to the RabbitMQ is successful!");
-				pool
-			}
-			Err(err) => {
-				println!("🔥 Failed to connect to the RabbitMQ: {:?}", err);
-				std::process::exit(1);
-			}
-		};
+	let conn = match lapin::Connection::connect(
+		&config.rabbitmq_url,
+		lapin::ConnectionProperties::default(),
+	)
+	.await
+	{
+		Ok(pool) => {
+			println!("✅ Connection to the RabbitMQ is successful!");
+			pool
+		}
+		Err(err) => {
+			println!("🔥 Failed to connect to the RabbitMQ: {:?}", err);
+			std::process::exit(1);
+		}
+	};
 	let channel = match conn.create_channel().await {
 		Ok(pool) => {
 			println!("✅ RabbitMQ Channel established successfuly!");
@@ -98,7 +100,7 @@ async fn main() -> std::io::Result<()> {
 	println!("✅ Server started successfully on http://localhost:8081/api");
 
 	HttpServer::new(move || {
-	let auth = GrantsMiddleware::with_extractor(extract);
+		let auth = GrantsMiddleware::with_extractor(extract);
 		App::new()
 			.app_data(web::Data::new(AppState {
 				db: pool.clone(),

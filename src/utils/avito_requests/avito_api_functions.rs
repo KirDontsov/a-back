@@ -1,4 +1,4 @@
-use reqwest::{header::{self, HeaderMap, HeaderValue}};
+use reqwest::header::{self, HeaderMap, HeaderValue};
 use serde::{Deserialize, Serialize};
 use std::env;
 

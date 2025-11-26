@@ -26,5 +26,4 @@ impl AvitoRequest {
 
 		Ok(avito_requests_query_result.unwrap_or(Vec::new()))
 	}
-
 }

@@ -99,7 +99,6 @@ impl WebSocketConnections {
 	}
 }
 
-
 // WebSocket handler function
 pub async fn websocket_handler(
 	req: HttpRequest,

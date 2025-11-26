@@ -149,9 +149,6 @@ pub struct AvitoFeedAd {
 	pub description: Option<String>,
 }
 
-
-
-
 #[allow(non_snake_case)]
 #[derive(Debug, Deserialize, sqlx::FromRow, Serialize, Clone)]
 pub struct AvitoEditorCategoryFieldsParams {

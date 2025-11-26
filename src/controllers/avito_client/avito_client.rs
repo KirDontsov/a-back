@@ -6,10 +6,9 @@ use crate::utils::avito_requests::{
 use crate::{
 	jwt_auth::JwtMiddleware,
 	models::{
-		ApiError, AvitoGetBalanceApiResponse,
-		AvitoGetItemsApiResponse, AvitoItemAnalyticsResponse, AvitoTokenCredentials,
-		AvitoTokenParams, GetAvitoItemsParams,
-		GetItemAnalyticsBody, UpdatePriceBody,
+		ApiError, AvitoGetBalanceApiResponse, AvitoGetItemsApiResponse, AvitoItemAnalyticsResponse,
+		AvitoTokenCredentials, AvitoTokenParams, GetAvitoItemsParams, GetItemAnalyticsBody,
+		UpdatePriceBody,
 	},
 };
 use actix_web::{
@@ -23,7 +22,7 @@ use serde_json::json;
 use std::env;
 
 use reqwest::{
-	header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE, USER_AGENT, ACCEPT},
+	header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT},
 	Client,
 };
 
@@ -152,11 +151,11 @@ pub async fn get_avito_balance(
 		return Err(ApiError::AvitoApiError(status_code, error_body));
 	}
 
-	let response_text = response.text().await?;
+	let response_text: String = response.text().await?;
 
 	// Parse the response with error context
 	let respon_data: AvitoGetBalanceApiResponse = serde_json::from_str(&response_text)
-		.map_err(|e| ApiError::JsonParseError(e, response_text.clone()))?;
+		.map_err(|e| ApiError::JsonParseError(e, response_text.to_string()))?;
 
 	Ok(HttpResponse::Ok().json(json!({
 		"status": "success",
@@ -212,10 +211,7 @@ pub async fn get_avito_item_analytics(
 		format!("Bearer {}", avito_token).parse().unwrap(),
 	);
 	headers.insert(USER_AGENT, HeaderValue::from_static("YourApp/1.0"));
-	headers.insert(
-		CONTENT_TYPE,
-		HeaderValue::from_static("application/json"),
-	);
+	headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 	headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
 
 	// Build request body
@@ -249,10 +245,10 @@ pub async fn get_avito_item_analytics(
 	}
 
 	// Parse response
-	let response_text = response.text().await?;
+	let response_text: String = response.text().await?;
 
 	let analytics_data: AvitoItemAnalyticsResponse = serde_json::from_str(&response_text)
-		.map_err(|e| ApiError::JsonParseError(e, response_text.clone()))?;
+		.map_err(|e| ApiError::JsonParseError(e, response_text.to_string()))?;
 
 	Ok(HttpResponse::Ok().json(json!({
 		"status": "success",
@@ -278,10 +274,7 @@ pub async fn update_avito_price(
 		format!("Bearer {}", avito_token).parse().unwrap(),
 	);
 	headers.insert(USER_AGENT, HeaderValue::from_static("YourApp/1.0"));
-	headers.insert(
-		CONTENT_TYPE,
-		HeaderValue::from_static("application/json"),
-	);
+	headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 	headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
 
 	// Build request body
@@ -310,10 +303,10 @@ pub async fn update_avito_price(
 	}
 
 	// Parse response
-	let response_text = response.text().await?;
+	let response_text: String = response.text().await?;
 
 	let update_price_data: AvitoItemAnalyticsResponse = serde_json::from_str(&response_text)
-		.map_err(|e| ApiError::JsonParseError(e, response_text.clone()))?;
+		.map_err(|e| ApiError::JsonParseError(e, response_text.to_string()))?;
 
 	Ok(HttpResponse::Ok().json(json!({
 		"status": "success",

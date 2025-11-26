@@ -14,7 +14,7 @@ use uuid::Uuid;
 use quick_xml::events::Event;
 use quick_xml::Reader;
 use reqwest::Client;
-use sqlx::Row;
+// use sqlx::Row; // Commenting out since it's unused
 use sqlx::{Postgres, Transaction};
 use std::collections::HashMap;
 use std::time::Duration;
@@ -22,8 +22,8 @@ use std::time::Duration;
 // Structure for POST request body containing account_id and xml_url
 #[derive(Deserialize)]
 pub struct ImportAvitoXmlRequest {
-    pub account_id: Uuid,
-    pub xml_url: String,
+	pub account_id: Uuid,
+	pub xml_url: String,
 }
 
 #[post("/avito/import-xml")]
@@ -33,7 +33,11 @@ pub async fn import_avito_xml(
 	_: JwtMiddleware,
 ) -> Result<HttpResponse, ApiError> {
 	let xml_url = &body.xml_url;
-	let account_id = if Some(body.account_id).is_some() { body.account_id } else { Uuid::parse_str("2acc3808-15f1-4abb-b15e-c7f4780a87da").unwrap() };
+	let account_id = if Some(body.account_id).is_some() {
+		body.account_id
+	} else {
+		Uuid::parse_str("2acc3808-15f1-4abb-b15e-c7f4780a87da").unwrap()
+	};
 
 	// Fetch XML data
 	let client = Client::builder()
@@ -66,7 +70,7 @@ pub async fn import_avito_xml(
 
 	// Print debug information about the first few ads
 	for (i, ad) in ads.iter().take(3).enumerate() {
-	println!("Ad {}: id={}, fields={}", i, ad.id, ad.fields.len());
+		println!("Ad {}: id={}, fields={}", i, ad.id, ad.fields.len());
 		if let Some(images) = ad.fields.get("Images") {
 			println!("  Images field: {}", images);
 		} else {

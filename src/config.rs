@@ -12,7 +12,7 @@ impl Config {
 		let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
 		let rabbitmq_url = std::env::var("RABBITMQ_URL").expect("RABBITMQ_URL must be set");
 		let secure_cookies = std::env::var("SECURE_COOKIES")
-			.unwrap_or_else(|_| "false".to_string())  // Default to false for development
+			.unwrap_or_else(|_| "false".to_string()) // Default to false for development
 			.parse()
 			.expect("SECURE_COOKIES must be a boolean value (true/false)");
 

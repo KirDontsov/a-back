@@ -2,9 +2,7 @@ use crate::{
 	models::{LoginUserSchema, TokenClaims, User},
 	AppState,
 };
-use actix_web::{
-	post, web, HttpRequest, HttpResponse, Responder,
-};
+use actix_web::{post, web, HttpRequest, HttpResponse, Responder};
 use argon2::{
 	password_hash::{PasswordHash, PasswordVerifier},
 	Argon2,
@@ -15,7 +13,7 @@ use serde_json::json;
 
 #[post("/auth/login")]
 async fn login_handler(
-	req: HttpRequest,
+	_req: HttpRequest,
 	body: web::Json<LoginUserSchema>,
 	data: web::Data<AppState>,
 ) -> impl Responder {
@@ -60,6 +58,5 @@ async fn login_handler(
 	)
 	.unwrap();
 
-	HttpResponse::Ok()
-		.json(json!({"status": "success", "token": token}))
+	HttpResponse::Ok().json(json!({"status": "success", "token": token}))
 }

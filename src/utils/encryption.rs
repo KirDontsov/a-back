@@ -70,7 +70,6 @@ pub fn decrypt_data(
 	}
 }
 
-
 pub fn generate_iv() -> [u8; 16] {
 	let mut iv = [0u8; 16];
 	OsRng.fill_bytes(&mut iv);
