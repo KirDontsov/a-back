@@ -1,0 +1,10 @@
+{
+  "name": "actix-web-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "cargo run -r",
+    "up": "pm2 start target/debug/<your-app> --watch",
+    "down": "pm2 stop 0 --watch && pm2 delete 0"
+  }
+}

@@ -1,0 +1,17 @@
+/target
+.idea/**
+.vscode/**
+/data/**
+.env
+
+output/**
+
+# misc
+.DS_Store
+*.pem
+
+# production
+/build
+src/controllers/.DS_Store
+src/.DS_Store
+.DS_Store
