@@ -1,1 +1,1 @@
-target/release/actix-web-app
+target/release/a-back
