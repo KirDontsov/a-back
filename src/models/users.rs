@@ -49,21 +49,3 @@ pub struct UpdateUserSchema {
 	// #[serde(rename = "updatedAt")]
 	// pub updated_at: String,
 }
-
-#[allow(non_snake_case)]
-#[derive(Debug, Deserialize, sqlx::FromRow, Serialize, Clone)]
-pub struct Quote {
-	pub id: uuid::Uuid,
-	pub text: Option<String>,
-	pub author: Option<String>,
-	#[serde(rename = "createdAt")]
-	pub created_at: Option<DateTime<Utc>>,
-	#[serde(rename = "updatedAt")]
-	pub updated_at: Option<DateTime<Utc>>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct AddQuoteSchema {
-	pub text: String,
-	pub author: String,
-}

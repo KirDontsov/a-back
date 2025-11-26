@@ -95,7 +95,7 @@ async fn main() -> std::io::Result<()> {
 		}
 	});
 
-	println!("✅ Server started successfully on http://localhost:8080/api");
+	println!("✅ Server started successfully on http://localhost:8081/api");
 
 	HttpServer::new(move || {
 	let auth = GrantsMiddleware::with_extractor(extract);
