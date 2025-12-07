@@ -7,6 +7,7 @@ mod utils;
 
 use actix_cors::Cors;
 use actix_web::middleware::Logger;
+use actix_web::HttpRequest;
 use actix_web::{web, App, HttpServer};
 use actix_web_grants::GrantsMiddleware;
 use config::Config;
@@ -83,7 +84,7 @@ async fn main() -> std::io::Result<()> {
 	let websocket_connections = crate::controllers::websocket::WebSocketConnections::new();
 	let websocket_connections_data = web::Data::new(websocket_connections.clone());
 
-	// Start RabbitMQ consumer
+	// Start RabbitMQ consumers
 	let rabbitmq_channel_clone = channel.clone();
 	let ws_connections_clone = Arc::new(websocket_connections.clone());
 	tokio::spawn(async move {
@@ -94,6 +95,20 @@ async fn main() -> std::io::Result<()> {
 		.await
 		{
 			eprintln!("Error starting RabbitMQ consumer: {}", e);
+		}
+	});
+
+	// Start AI processing RabbitMQ consumer
+	let ai_rabbitmq_channel_clone = channel.clone();
+	let ai_ws_connections_clone = Arc::new(websocket_connections.clone());
+	tokio::spawn(async move {
+		if let Err(e) = crate::controllers::rabbitmq_consumer::ai_processing_consumer::AIProcessingConsumer::start_ai_consumer(
+			ai_rabbitmq_channel_clone,
+			ai_ws_connections_clone,
+		)
+		.await
+		{
+			eprintln!("Error starting AI processing RabbitMQ consumer: {}", e);
 		}
 	});
 
@@ -108,6 +123,17 @@ async fn main() -> std::io::Result<()> {
 				env: config.clone(),
 				websocket_connections: websocket_connections_data.clone(),
 			}))
+			.service(web::resource("/ws").route(web::get().to(
+				|req: HttpRequest, body: web::Payload, data: web::Data<AppState>| async move {
+					let websocket_connections = data.websocket_connections.clone();
+					crate::controllers::websocket::websocket_handler(
+						req,
+						body,
+						websocket_connections,
+					)
+					.await
+				},
+			)))
 			.configure(controllers::config)
 			.wrap(Cors::permissive())
 			.wrap(Logger::default())

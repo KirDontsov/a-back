@@ -1,3 +1,4 @@
+pub mod ai_title_processing;
 pub mod auth;
 pub mod avito_accounts;
 pub mod avito_ads;

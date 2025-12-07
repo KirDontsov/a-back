@@ -1,6 +1,7 @@
 use crate::AppState;
 use actix_web::{web, HttpRequest};
 
+use crate::controllers::ai_title_processing::*;
 use crate::controllers::auth::*;
 use crate::controllers::avito_accounts::*;
 use crate::controllers::avito_ads::*;
@@ -51,6 +52,7 @@ pub fn config(conf: &mut web::ServiceConfig) {
 		.service(create_avito_account_handler)
 		.service(update_avito_account_handler)
 		.service(delete_avito_account_handler)
+		.service(create_ai_title_processing_handler)
 		.route(
 			"/ws",
 			web::get().to(
