@@ -13,16 +13,16 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct AiTitleProcessingMessage {
+pub struct AiDescriptionProcessingMessage {
 	pub task_id: Uuid,
 	pub user_id: Uuid,
-	pub title: Option<String>,
+	pub description: Option<String>,
 	pub category: String,
 	pub created_ts: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct AiTitleProcessingResult {
+pub struct AiDescriptionProcessingResult {
 	pub task_id: Uuid,
 	pub user_id: Uuid,
 	pub request_id: Uuid,
@@ -34,12 +34,12 @@ pub struct AiTitleProcessingResult {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AiResultData {
-	pub beautified_title: String,
+	pub beautified_description: String,
 }
 
 #[derive(Deserialize)]
-pub struct AiTitleProcessingRequest {
-	pub title: String,
+pub struct AiDescriptionProcessingRequest {
+	pub description: String,
 	pub category: String,
 }
 
@@ -65,15 +65,15 @@ fn is_date_not_today(ad_date_str: &str) -> bool {
 	}
 }
 
-// Create AI title processing task handler
-#[post("/ai_title_processing")]
-pub async fn create_ai_title_processing_handler(
-	body: web::Json<AiTitleProcessingRequest>,
+// Create AI description processing task handler
+#[post("/ai_description_processing")]
+pub async fn create_ai_description_processing_handler(
+	body: web::Json<AiDescriptionProcessingRequest>,
 	data: web::Data<AppState>,
 	user: JwtMiddleware,
 ) -> impl Responder {
 	let user_id = user.user_id;
-	let title = &body.title;
+	let description = &body.description;
 	let category = &body.category;
 
 	// Validate input
@@ -102,7 +102,7 @@ pub async fn create_ai_title_processing_handler(
 			.await;
 
 	// Query to find the newest request matching the category
-	let title = if let Ok(Some(request)) = found_request_result {
+	let description = if let Ok(Some(request)) = found_request_result {
 		let request_id = request.request_id;
 
 		// Query to find ads with the specified conditions for the specific request
@@ -130,10 +130,13 @@ pub async fn create_ai_title_processing_handler(
 			// Check if the ad date is not today (since ad_date is in string format like "24.10.2025 в 15:57")
 			if is_date_not_today(&ad.ad_date) {
 				// Print the ad (as requested in the task)
-				println!("Found ad: ID={}, Title={}", ad.avito_ad_id, ad.title);
+				println!(
+					"Found ad: ID={}, Description={}",
+					ad.avito_ad_id, ad.description
+				);
 
-				// Return the title from the ad as the best title
-				Some(ad.title)
+				// Return the description from the ad as the best description
+				Some(ad.description)
 			} else {
 				None
 			}
@@ -145,31 +148,31 @@ pub async fn create_ai_title_processing_handler(
 	};
 
 	// Create message
-	let message = AiTitleProcessingMessage {
+	let message = AiDescriptionProcessingMessage {
 		task_id: Uuid::new_v4(),
 		user_id,
-		title,
+		description,
 		category: category.clone(),
 		created_ts: chrono::Utc::now(),
 	};
 
 	// Publish to RabbitMQ using the channel
-	match publish_ai_title_processing(&data.rabbitmq_channel, &message).await {
+	match publish_ai_description_processing(&data.rabbitmq_channel, &message).await {
 		Ok(_) => {
 			// Just return immediately, the response will come via WebSocket
 			HttpResponse::Ok().json(json!({
 				"status": "success",
-				"message": "AI title processing task created",
+				"message": "AI description processing task created",
 				"data": {
 					"task_id": message.task_id,
 					"user_id": message.user_id,
-					"title": message.title,
+					"description": message.description,
 					"category": message.category,
 				}
 			}))
 		}
 		Err(e) => {
-			log::error!("Failed to publish AI title processing message: {}", e);
+			log::error!("Failed to publish AI description processing message: {}", e);
 			HttpResponse::InternalServerError().json(json!({
 				"status": "error",
 				"message": "Failed to send task to queue",
@@ -180,9 +183,9 @@ pub async fn create_ai_title_processing_handler(
 }
 
 // Message publishing function
-async fn publish_ai_title_processing(
+async fn publish_ai_description_processing(
 	rabbitmq_channel: &lapin::Channel,
-	message: &AiTitleProcessingMessage,
+	message: &AiDescriptionProcessingMessage,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 	let message_json = serde_json::to_string(message)?;
 
@@ -235,7 +238,7 @@ async fn publish_ai_title_processing(
 		.await?;
 
 	log::info!(
-		"Published AI title processing message for user: {} to queue: ai_processing_tasks",
+		"Published AI description processing message for user: {} to queue: ai_processing_tasks",
 		message.user_id
 	);
 	Ok(())
@@ -248,7 +251,7 @@ async fn listen_for_ai_response(
 	websocket_connections: Arc<WebSocketConnections>,
 	task_id: Uuid,
 	user_id: Uuid,
-) -> Result<AiTitleProcessingResult, Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<AiDescriptionProcessingResult, Box<dyn std::error::Error + Send + Sync>> {
 	// Declare the exchange
 	rabbitmq_channel
 		.exchange_declare(
@@ -298,7 +301,7 @@ async fn listen_for_ai_response(
 	let consumer = rabbitmq_channel
 		.basic_consume(
 			queue.name().as_str(),
-			"ai_title_response_consumer",
+			"ai_description_response_consumer",
 			BasicConsumeOptions::default(),
 			FieldTable::default(),
 		)
@@ -327,7 +330,7 @@ async fn listen_for_ai_response(
 						log::info!("Received AI response message: {}", message_data);
 
 						// Parse the message as JSON to check if it's the response for our task
-						match serde_json::from_str::<AiTitleProcessingResult>(&message_data) {
+						match serde_json::from_str::<AiDescriptionProcessingResult>(&message_data) {
 							Ok(ai_response) => {
 								if ai_response.task_id == task_id {
 									// Acknowledge the message
